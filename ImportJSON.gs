@@ -1,3 +1,37 @@
+/**
+ * Queries MFAPI site and (https://www.mfapi.in/) and returns the results to be inserted into a Google Spreadsheet.
+ * 
+ *
+ * For example:
+ *
+ * get_MFAPI_Data(https://api.mfapi.in/mf/134815, 30))
+ * This one returns 30 latest NAV values for the fund "Mirae Asset Hybrid Equity Fund -Regular Plan-Growth"
+ * 
+ * @param {url}          the URL to a public JSON feed
+ * @param {range}        range of past data that is required
+
+ *
+ * @return a two-dimensional array containing the data. First column containing dates (order is oldest at the top) and second containing the daily NAV
+ **/
+
+function get_MFAPI_Data(url, range) {
+  var NAV_Arr = new Array(); // array of MF NAV data
+  var data = ImportJSONAdvanced(url, null, null, null, includeXPath_, defaultTransform_);
+ 
+  var i; 
+  for (i=0; i<range ; i++)
+  {
+    
+    NAV_Arr[i]= new Array(2)
+    NAV_Arr[i][0]= new Date( data[range-i][5].replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
+    NAV_Arr[i][1]= Number(data[range-i][6]);
+  }
+  
+ 
+   return NAV_Arr ; 
+  
+}
+
 /*====================================================================================================================================*
   ImportJSON by Brad Jasper and Trevor Lohrbeer
   ====================================================================================================================================
@@ -69,28 +103,6 @@
  **/
 function ImportJSON(url, query, parseOptions) {
   return ImportJSONAdvanced(url, null, query, parseOptions, includeXPath_, defaultTransform_);
-}
-
-/**
- * Queies MFAPI site and (https://www.mfapi.in/) and returns the results to be inserted into a Google Spreadsheet.
- * 
- *
- * For example:
- *
- * get_MFAPI_Data(https://api.mfapi.in/mf/134815, 30))
- * This one returns 30 latest NAV values for the fund "Mirae Asset Hybrid Equity Fund -Regular Plan-Growth"
- * 
- * @param {url}          the URL to a public JSON feed
- * @param {range}        rane of past data that is required
-
- *
- * @return a two-dimensional array containing the dat. First column containing dates and second containing the daily NAV
- **/
-
-function get_MFAPI_Data(url, range) {
-  var parseOptions = "noHeaders"
-  var query = ""
-  return ImportJSONAdvanced2(url, null, query, parseOptions, includeXPath_, defaultTransform_, range);
 }
 
 /**
@@ -245,17 +257,6 @@ function ImportJSONAdvanced(url, fetchOptions, query, parseOptions, includeFunc,
   return parseJSONObject_(object, query, parseOptions, includeFunc, transformFunc);
 }
 
-/*
-* Hack of the above function for fetching MFAPI data 
-*/
-function ImportJSONAdvanced2 (url, fetchOptions, query, parseOptions, includeFunc, transformFunc, range) {
-  var jsondata = UrlFetchApp.fetch(url, fetchOptions);
-  var object   = JSON.parse(jsondata.getContentText());
-  
-  return parseJSONObject2_(object, query, parseOptions, includeFunc, transformFunc, range);
-}
-
-
 /**
  * Helper function to authenticate with basic auth informations using ImportJSONAdvanced
  *
@@ -380,49 +381,6 @@ function parseJSONObject_(object, query, options, includeFunc, transformFunc) {
   
   return hasOption_(options, "noHeaders") ? (data.length > 1 ? data.slice(1) : new Array()) : data;
 }
-
-/*
-* Hack of the above function for fetching MFAPI data 
-*/
-function parseJSONObject2_(object, query, options, includeFunc, transformFunc, range) {
-  var headers = new Array();
-  var data    = new Array();
-  var NAV_Arr = new Array(); // array of MF NAV data
-  
-  if (query && !Array.isArray(query) && query.toString().indexOf(",") != -1) {
-    query = query.toString().split(",");
-  }
-
-  // Prepopulate the headers to lock in their order
-  if (hasOption_(options, "allHeaders") && Array.isArray(query))
-  {
-    for (var i = 0; i < query.length; i++)
-    {
-      headers[query[i]] = Object.keys(headers).length;
-    }
-  }
-  
-  if (options) {
-    options = options.toString().split(",");
-  }
-    
-  parseData_(headers, data, "", {rowIndex: 1}, object, query, options, includeFunc);
-  parseHeaders_(headers, data);
-  transformData_(data, options, transformFunc);
-  
-  var i; 
-  for (i=0; i<range ; i++)
-  {
-    
-    NAV_Arr[i]= new Array(2)
-    NAV_Arr[i][0]= new Date( data[range-i][5].replace( /(\d{2})-(\d{2})-(\d{4})/, "$2/$1/$3") );
-    NAV_Arr[i][1]= Number(data[range-i][6]);
-  }
-  
- 
-   return NAV_Arr ;
-}
-
 
 /** 
  * Parses the data contained within the given value and inserts it into the data two-dimensional array starting at the rowIndex. 
@@ -708,3 +666,8 @@ function getDataFromNamedSheet_(sheetName) {
   Logger.log(jsonText);
   return JSON.parse(jsonText);
 }
+
+
+
+
+
