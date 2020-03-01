@@ -1,10 +1,23 @@
 # ImportJSON_MFAPI
 
-Access MFAPI in Google Spreadheets End users are mostly non programmers who wan to import Indian Mutal Funds data in Google Spreadsheets.
+Access MFAPI in Google Spreadheets End users are mostly non programmers who want to import Indian Mutal Funds data in Google Spreadsheets.
 
 REF Mutual Funds Data https://www.mfapi.in/ Thiis site provides data from Indian mutual funds in the form of JSON.
 
+Open google sheets and go to tools -> script editor
+copy paste contents of the .gs file from this project over there and save.
+go back to google sheets page and use the below example for getting MF data.
 
+For example you can use the below function in your google sheets
+get_MFAPI_Data(https://api.mfapi.in/mf/134815, 30))
+This one returns 30 latest NAV values for the fund "Mirae Asset Hybrid Equity Fund -Regular Plan-Growth" 
+url          the URL to a public JSON feed
+range        range of past data that is required
+
+
+
+
+Below is the library I used .
 # ImportJSON
 
 Import JSON from any URL directly into your Google Sheets. `ImportJSON.gs` adds an `=ImportJSON()` function to your spreadsheet, allowing quick and easy JSON importing. To use go to `Tools` > `Script Editor` and add the `ImportJSON.gs` file. Now in your spreadsheet you can access the `ImportJSON()` function. Use it like this:
